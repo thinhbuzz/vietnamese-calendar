@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Viet Nam Calendar</string>
+    <string name="app_name">Vietnamese Calendar</string>
+    <string name="widget_description">Widget displays Vietnamese calendar with lunar dates</string>
 </resources>
