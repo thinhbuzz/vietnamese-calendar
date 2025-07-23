@@ -5,20 +5,28 @@ import kotlinx.datetime.*
 object CalendarUtils {
     
     fun getWeekDays(date: LocalDate): List<LocalDate> {
-        val dayOfWeek = date.dayOfWeek.value
-        val startOfWeek = date.minus(DatePeriod(days = dayOfWeek - 1))
+        // Find the Sunday of the current week
+        val daysFromSunday = if (date.dayOfWeek == DayOfWeek.SUNDAY) 0 else date.dayOfWeek.value
+        val startOfWeek = date.minus(DatePeriod(days = daysFromSunday))
         return (0..6).map { startOfWeek.plus(DatePeriod(days = it)) }
     }
     
     fun getMonthDays(yearMonth: YearMonth): List<LocalDate?> {
         val firstDay = LocalDate(yearMonth.year, yearMonth.month, 1)
-        val lastDay = LocalDate(yearMonth.year, yearMonth.month, yearMonth.month.length(isLeapYear(yearMonth.year)))
-        val firstDayOfWeek = firstDay.dayOfWeek.value
+        val daysInMonth = when (yearMonth.month) {
+            Month.JANUARY, Month.MARCH, Month.MAY, Month.JULY, Month.AUGUST, Month.OCTOBER, Month.DECEMBER -> 31
+            Month.APRIL, Month.JUNE, Month.SEPTEMBER, Month.NOVEMBER -> 30
+            Month.FEBRUARY -> if (isLeapYear(yearMonth.year)) 29 else 28
+            else -> 30
+        }
+        val lastDay = LocalDate(yearMonth.year, yearMonth.month, daysInMonth)
+        // Sunday = 0, Monday = 1, etc.
+        val firstDayOfWeek = if (firstDay.dayOfWeek == DayOfWeek.SUNDAY) 0 else firstDay.dayOfWeek.value
         
         val days = mutableListOf<LocalDate?>()
         
         // Add empty days for the beginning of the month
-        repeat(firstDayOfWeek - 1) {
+        repeat(firstDayOfWeek) {
             days.add(null)
         }
         

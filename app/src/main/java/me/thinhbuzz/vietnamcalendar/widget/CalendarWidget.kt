@@ -13,9 +13,6 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
-import androidx.glance.appwidget.lazy.GridCells
-import androidx.glance.appwidget.lazy.LazyVerticalGrid
-import androidx.glance.appwidget.lazy.items
 import androidx.glance.appwidget.provideContent
 import androidx.glance.layout.*
 import androidx.glance.text.FontWeight
@@ -24,18 +21,27 @@ import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import kotlinx.datetime.*
 import me.thinhbuzz.vietnamcalendar.utils.CalendarUtils
+import android.util.Log
 import me.thinhbuzz.vietnamcalendar.utils.YearMonth
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.currentState
 import me.thinhbuzz.vietnamcalendar.utils.LunarCalendarConverter
 import me.thinhbuzz.vietnamcalendar.utils.VietnameseHolidays
+import me.thinhbuzz.vietnamcalendar.utils.LunarDate
 
 class CalendarWidget : GlanceAppWidget() {
     
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        provideContent {
-            CalendarWidgetContent()
+        try {
+            provideContent {
+                CalendarWidgetContent()
+            }
+        } catch (e: Exception) {
+            Log.e("CalendarWidget", "Error providing glance content", e)
+            provideContent {
+                ErrorContent()
+            }
         }
     }
 }
@@ -60,9 +66,32 @@ fun CalendarWidgetContent() {
 
 @Composable
 fun MonthWidgetView() {
-    val today = CalendarUtils.getCurrentDate()
-    val currentYearMonth = CalendarUtils.getCurrentYearMonth()
-    val monthDays = CalendarUtils.getMonthDays(currentYearMonth)
+    val today = try {
+        CalendarUtils.getCurrentDate()
+    } catch (e: Exception) {
+        Log.e("CalendarWidget", "Error getting current date", e)
+        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+    }
+    
+    val currentYearMonth = try {
+        CalendarUtils.getCurrentYearMonth()
+    } catch (e: Exception) {
+        Log.e("CalendarWidget", "Error getting current year month", e)
+        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+        YearMonth(now.year, now.month)
+    }
+    
+    val monthDays = try {
+        CalendarUtils.getMonthDays(currentYearMonth)
+    } catch (e: Exception) {
+        Log.e("CalendarWidget", "Error getting month days", e)
+        emptyList<LocalDate?>()
+    }
+    
+    if (monthDays.isEmpty()) {
+        ErrorContent()
+        return
+    }
     
     Column(
         modifier = GlanceModifier.fillMaxSize()
@@ -106,16 +135,28 @@ fun MonthWidgetView() {
             }
         }
         
-        // Month grid
-        LazyVerticalGrid(
-            gridCells = GridCells.Fixed(7),
+        // Month grid - using simple rows instead of LazyVerticalGrid
+        val rows = monthDays.chunked(7)
+        Column(
             modifier = GlanceModifier.fillMaxSize()
         ) {
-            items(monthDays) { date ->
-                if (date != null) {
-                    WidgetDayCell(date = date, isToday = date == today)
-                } else {
-                    Spacer(modifier = GlanceModifier.size(30.dp))
+            rows.forEach { weekDays ->
+                Row(
+                    modifier = GlanceModifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    weekDays.forEach { date ->
+                        Box(
+                            modifier = GlanceModifier.defaultWeight(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (date != null) {
+                                WidgetDayCell(date = date, isToday = date == today)
+                            } else {
+                                Spacer(modifier = GlanceModifier.size(20.dp))
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -124,8 +165,24 @@ fun MonthWidgetView() {
 
 @Composable
 fun WeekWidgetView() {
-    val today = CalendarUtils.getCurrentDate()
-    val weekDays = CalendarUtils.getWeekDays(today)
+    val today = try {
+        CalendarUtils.getCurrentDate()
+    } catch (e: Exception) {
+        Log.e("CalendarWidget", "Error getting current date", e)
+        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+    }
+    
+    val weekDays = try {
+        CalendarUtils.getWeekDays(today)
+    } catch (e: Exception) {
+        Log.e("CalendarWidget", "Error getting week days", e)
+        emptyList<LocalDate>()
+    }
+    
+    if (weekDays.isEmpty()) {
+        ErrorContent()
+        return
+    }
     
     Column(
         modifier = GlanceModifier.fillMaxSize()
@@ -165,17 +222,45 @@ fun WeekWidgetView() {
 }
 
 @Composable
+fun ErrorContent() {
+    Box(
+        modifier = GlanceModifier
+            .fillMaxSize()
+            .background(GlanceTheme.colors.background),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Unable to load widget",
+            style = TextStyle(
+                fontSize = 12.sp,
+                color = GlanceTheme.colors.onBackground
+            )
+        )
+    }
+}
+
+@Composable
 fun WidgetDayCell(
     date: LocalDate,
     isToday: Boolean,
     isWeekView: Boolean = false
 ) {
-    val lunarDate = LunarCalendarConverter.convertSolar2Lunar(
-        date.dayOfMonth,
-        date.monthNumber,
-        date.year
-    )
-    val holiday = VietnameseHolidays.isHoliday(date)
+    val lunarDate = try {
+        LunarCalendarConverter.convertSolar2Lunar(
+            date.dayOfMonth,
+            date.monthNumber,
+            date.year
+        )
+    } catch (e: Exception) {
+        Log.e("CalendarWidget", "Error converting lunar date", e)
+        LunarDate(date.dayOfMonth, date.monthNumber, date.year, false)
+    }
+    val holiday = try {
+        VietnameseHolidays.isHoliday(date)
+    } catch (e: Exception) {
+        Log.e("CalendarWidget", "Error checking holiday", e)
+        null
+    }
     
     val backgroundColor = if (isToday) {
         GlanceTheme.colors.primary
@@ -190,43 +275,47 @@ fun WidgetDayCell(
         else -> GlanceTheme.colors.onBackground
     }
     
-    Column(
+    Box(
         modifier = GlanceModifier
-            .padding(2.dp)
+            .padding(1.dp)
             .background(backgroundColor)
             .clickable(actionRunCallback<OpenAppAction>()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalAlignment = Alignment.CenterVertically
+        contentAlignment = Alignment.Center
     ) {
-        if (isWeekView) {
-            // Day of week
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (isWeekView) {
+                // Day of week
+                Text(
+                    text = CalendarUtils.getVietnameseDayOfWeek(date.dayOfWeek).take(2),
+                    style = TextStyle(
+                        fontSize = 10.sp,
+                        color = textColor
+                    )
+                )
+            }
+            
+            // Gregorian date
             Text(
-                text = CalendarUtils.getVietnameseDayOfWeek(date.dayOfWeek).take(2),
+                text = date.dayOfMonth.toString(),
                 style = TextStyle(
-                    fontSize = 10.sp,
+                    fontSize = if (isWeekView) 16.sp else 12.sp,
+                    fontWeight = FontWeight.Bold,
                     color = textColor
                 )
             )
+            
+            // Lunar date
+            Text(
+                text = "${lunarDate.day}",
+                style = TextStyle(
+                    fontSize = if (isWeekView) 10.sp else 8.sp,
+                    color = if (isToday) GlanceTheme.colors.onPrimary else GlanceTheme.colors.onSurfaceVariant
+                )
+            )
         }
-        
-        // Gregorian date
-        Text(
-            text = date.dayOfMonth.toString(),
-            style = TextStyle(
-                fontSize = if (isWeekView) 16.sp else 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = textColor
-            )
-        )
-        
-        // Lunar date
-        Text(
-            text = "${lunarDate.day}",
-            style = TextStyle(
-                fontSize = if (isWeekView) 10.sp else 8.sp,
-                color = if (isToday) GlanceTheme.colors.onPrimary else GlanceTheme.colors.onSurfaceVariant
-            )
-        )
     }
 }
 
