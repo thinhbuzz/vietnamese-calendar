@@ -30,26 +30,15 @@ fun YearView(
     val months = CalendarUtils.getYearMonths(year)
     val currentMonth = CalendarUtils.getCurrentYearMonth()
     
-    Column(
+    // Months grid without year header
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
+            .fillMaxSize()
+            .padding(4.dp)
     ) {
-        // Year header
-        Text(
-            text = "Năm $year",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        
-        // Months grid
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
             items(months.size) { index ->
                 val yearMonth = months[index]
                 MiniMonthView(
@@ -58,7 +47,6 @@ fun YearView(
                     selectedDate = selectedDate,
                     onMonthSelected = onMonthSelected
                 )
-            }
         }
     }
 }
@@ -81,14 +69,14 @@ private fun MiniMonthView(
         )
     ) {
         Column(
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(4.dp)
         ) {
             // Month name
             Text(
                 text = CalendarUtils.getVietnameseMonth(yearMonth.month),
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 4.dp)
+                modifier = Modifier.padding(bottom = 2.dp)
             )
             
             // Mini weekday headers
@@ -99,7 +87,7 @@ private fun MiniMonthView(
                 listOf("C", "2", "3", "4", "5", "6", "7").forEach { day ->
                     Text(
                         text = day,
-                        fontSize = 8.sp,
+                        fontSize = 7.sp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f),
                         color = if (day == "C") Color.Red else MaterialTheme.colorScheme.onSurface
@@ -127,7 +115,7 @@ private fun MiniMonthView(
                                 
                                 Text(
                                     text = date.dayOfMonth.toString(),
-                                    fontSize = 10.sp,
+                                    fontSize = 9.sp,
                                     color = when {
                                         date.month != yearMonth.month -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                                         isSelected -> MaterialTheme.colorScheme.primary
@@ -140,7 +128,7 @@ private fun MiniMonthView(
                                         Modifier
                                             .clip(RoundedCornerShape(50))
                                             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-                                            .padding(2.dp)
+                                            .padding(1.dp)
                                     } else Modifier
                                 )
                             }

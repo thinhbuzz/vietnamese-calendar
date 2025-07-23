@@ -77,25 +77,29 @@ fun CalendarScreen(
                 }
             )
             
-            // Calendar content
-            when (uiState.currentView) {
-                CalendarView.WEEK -> WeekView(
-                    selectedDate = uiState.selectedDate,
-                    onDateSelected = viewModel::selectDate
-                )
-                CalendarView.MONTH -> MonthView(
-                    yearMonth = uiState.currentYearMonth,
-                    selectedDate = uiState.selectedDate,
-                    onDateSelected = viewModel::selectDate
-                )
-                CalendarView.YEAR -> YearView(
-                    year = uiState.currentYear,
-                    selectedDate = uiState.selectedDate,
-                    onMonthSelected = { yearMonth ->
-                        viewModel.selectDate(LocalDate(yearMonth.year, yearMonth.month, 1))
-                        viewModel.setCalendarView(CalendarView.MONTH)
-                    }
-                )
+            // Calendar content with weight to take available space
+            Box(
+                modifier = Modifier.weight(1f)
+            ) {
+                when (uiState.currentView) {
+                    CalendarView.WEEK -> WeekView(
+                        selectedDate = uiState.selectedDate,
+                        onDateSelected = viewModel::selectDate
+                    )
+                    CalendarView.MONTH -> MonthView(
+                        yearMonth = uiState.currentYearMonth,
+                        selectedDate = uiState.selectedDate,
+                        onDateSelected = viewModel::selectDate
+                    )
+                    CalendarView.YEAR -> YearView(
+                        year = uiState.currentYear,
+                        selectedDate = uiState.selectedDate,
+                        onMonthSelected = { yearMonth ->
+                            viewModel.selectDate(LocalDate(yearMonth.year, yearMonth.month, 1))
+                            viewModel.setCalendarView(CalendarView.MONTH)
+                        }
+                    )
+                }
             }
             
             // Selected date info

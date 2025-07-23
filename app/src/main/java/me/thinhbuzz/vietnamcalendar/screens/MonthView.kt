@@ -35,17 +35,9 @@ fun MonthView(
     
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
+            .fillMaxSize()
+            .padding(8.dp)
     ) {
-        // Month header
-        Text(
-            text = "${CalendarUtils.getVietnameseMonth(yearMonth.month)} ${yearMonth.year}",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        
         // Weekday headers
         Row(
             modifier = Modifier
@@ -70,7 +62,7 @@ fun MonthView(
             columns = GridCells.Fixed(7),
             verticalArrangement = Arrangement.spacedBy(4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxSize()
         ) {
             items(monthDays) { date ->
                 if (date != null) {
@@ -131,7 +123,7 @@ private fun MonthDayCell(
         // Gregorian date
         Text(
             text = date.dayOfMonth.toString(),
-            fontSize = 16.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.Medium,
             color = textColor
         )
@@ -139,7 +131,7 @@ private fun MonthDayCell(
         // Lunar date
         Text(
             text = "${lunarDate.day}",
-            fontSize = 10.sp,
+            fontSize = 12.sp,
             color = if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f) else textColor.copy(alpha = 0.6f)
         )
         
