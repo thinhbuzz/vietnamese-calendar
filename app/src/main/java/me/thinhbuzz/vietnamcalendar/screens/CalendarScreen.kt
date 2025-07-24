@@ -28,21 +28,6 @@ fun CalendarScreen(
     val uiState by viewModel.uiState.collectAsState()
     
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.app_name),
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                actions = {
-                    IconButton(onClick = { viewModel.navigateToToday() }) {
-                        Icon(Icons.Default.DateRange, contentDescription = "Today")
-                    }
-                }
-            )
-        },
         bottomBar = {
             CalendarBottomBar(
                 currentView = uiState.currentView,
@@ -74,7 +59,8 @@ fun CalendarScreen(
                         CalendarView.MONTH -> viewModel.navigateToNextMonth()
                         CalendarView.YEAR -> viewModel.navigateToNextYear()
                     }
-                }
+                },
+                onNavigateToday = { viewModel.navigateToToday() }
             )
             
             // Calendar content with weight to take available space
@@ -119,7 +105,8 @@ private fun CalendarNavigationBar(
     currentYearMonth: YearMonth,
     currentYear: Int,
     onNavigatePrevious: () -> Unit,
-    onNavigateNext: () -> Unit
+    onNavigateNext: () -> Unit,
+    onNavigateToday: () -> Unit
 ) {
     val title = when (currentView) {
         CalendarView.WEEK -> {
@@ -142,11 +129,19 @@ private fun CalendarNavigationBar(
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous")
         }
         
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            IconButton(onClick = onNavigateToday) {
+                Icon(Icons.Default.DateRange, contentDescription = "Today")
+            }
+        }
         
         IconButton(onClick = onNavigateNext) {
             Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next")
