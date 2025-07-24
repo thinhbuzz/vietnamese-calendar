@@ -70,12 +70,16 @@ fun CalendarScreen(
                 when (uiState.currentView) {
                     CalendarView.WEEK -> WeekView(
                         selectedDate = uiState.selectedDate,
-                        onDateSelected = viewModel::selectDate
+                        onDateSelected = viewModel::selectDate,
+                        onSwipeLeft = viewModel::navigateToNextWeek,
+                        onSwipeRight = viewModel::navigateToPreviousWeek
                     )
                     CalendarView.MONTH -> MonthView(
                         yearMonth = uiState.currentYearMonth,
                         selectedDate = uiState.selectedDate,
-                        onDateSelected = viewModel::selectDate
+                        onDateSelected = viewModel::selectDate,
+                        onSwipeLeft = viewModel::navigateToNextMonth,
+                        onSwipeRight = viewModel::navigateToPreviousMonth
                     )
                     CalendarView.YEAR -> YearView(
                         year = uiState.currentYear,
@@ -83,7 +87,9 @@ fun CalendarScreen(
                         onMonthSelected = { yearMonth ->
                             viewModel.selectDate(LocalDate(yearMonth.year, yearMonth.month, 1))
                             viewModel.setCalendarView(CalendarView.MONTH)
-                        }
+                        },
+                        onSwipeLeft = viewModel::navigateToNextYear,
+                        onSwipeRight = viewModel::navigateToPreviousYear
                     )
                 }
             }

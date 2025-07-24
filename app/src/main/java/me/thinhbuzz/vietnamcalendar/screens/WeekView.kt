@@ -3,14 +3,16 @@ package me.thinhbuzz.vietnamcalendar.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -24,15 +26,32 @@ import me.thinhbuzz.vietnamcalendar.utils.VietnameseHolidays
 @Composable
 fun WeekView(
     selectedDate: LocalDate,
-    onDateSelected: (LocalDate) -> Unit
+    onDateSelected: (LocalDate) -> Unit,
+    onSwipeLeft: () -> Unit,
+    onSwipeRight: () -> Unit
 ) {
     val weekDays = CalendarUtils.getWeekDays(selectedDate)
     val today = CalendarUtils.getCurrentDate()
+    var dragAmount by remember { mutableStateOf(0f) }
     
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures(
+                    onDragEnd = {
+                        if (dragAmount < -100) {
+                            onSwipeLeft()
+                        } else if (dragAmount > 100) {
+                            onSwipeRight()
+                        }
+                        dragAmount = 0f
+                    }
+                ) { _, dragDelta ->
+                    dragAmount += dragDelta
+                }
+            }
     ) {
         // Week header with day names
         Row(
