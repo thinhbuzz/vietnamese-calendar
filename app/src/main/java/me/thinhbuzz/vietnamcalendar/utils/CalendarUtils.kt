@@ -11,7 +11,7 @@ object CalendarUtils {
         return (0..6).map { startOfWeek.plus(DatePeriod(days = it)) }
     }
     
-    fun getMonthDays(yearMonth: YearMonth): List<LocalDate?> {
+    fun getMonthDays(yearMonth: YearMonth): List<LocalDate> {
         val firstDay = LocalDate(yearMonth.year, yearMonth.month, 1)
         val daysInMonth = when (yearMonth.month) {
             Month.JANUARY, Month.MARCH, Month.MAY, Month.JULY, Month.AUGUST, Month.OCTOBER, Month.DECEMBER -> 31
@@ -23,11 +23,17 @@ object CalendarUtils {
         // Sunday = 0, Monday = 1, etc.
         val firstDayOfWeek = if (firstDay.dayOfWeek == DayOfWeek.SUNDAY) 0 else firstDay.dayOfWeek.value
         
-        val days = mutableListOf<LocalDate?>()
+        val days = mutableListOf<LocalDate>()
         
-        // Add empty days for the beginning of the month
-        repeat(firstDayOfWeek) {
-            days.add(null)
+        // Add days from previous month for the beginning of the month
+        if (firstDayOfWeek > 0) {
+            val previousMonthLastDay = firstDay.minus(DatePeriod(days = 1))
+            val startDate = previousMonthLastDay.minus(DatePeriod(days = firstDayOfWeek - 1))
+            var currentDate = startDate
+            repeat(firstDayOfWeek) {
+                days.add(currentDate)
+                currentDate = currentDate.plus(DatePeriod(days = 1))
+            }
         }
         
         // Add all days of the month
@@ -37,9 +43,11 @@ object CalendarUtils {
             currentDay = currentDay.plus(DatePeriod(days = 1))
         }
         
-        // Add empty days to complete the last week
+        // Add days from next month to complete the last week
+        var nextMonthDay = lastDay.plus(DatePeriod(days = 1))
         while (days.size % 7 != 0) {
-            days.add(null)
+            days.add(nextMonthDay)
+            nextMonthDay = nextMonthDay.plus(DatePeriod(days = 1))
         }
         
         return days

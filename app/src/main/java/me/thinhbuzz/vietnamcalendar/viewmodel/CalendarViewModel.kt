@@ -35,7 +35,8 @@ class CalendarViewModel : ViewModel() {
     fun selectDate(date: LocalDate) {
         _uiState.value = _uiState.value.copy(
             selectedDate = date,
-            currentYearMonth = YearMonth(date.year, date.month)
+            currentYearMonth = YearMonth(date.year, date.month),
+            currentYear = date.year
         )
     }
     

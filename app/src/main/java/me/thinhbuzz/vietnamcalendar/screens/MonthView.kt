@@ -65,17 +65,13 @@ fun MonthView(
             modifier = Modifier.fillMaxSize()
         ) {
             items(monthDays) { date ->
-                if (date != null) {
-                    MonthDayCell(
-                        date = date,
-                        isSelected = date == selectedDate,
-                        isToday = date == today,
-                        isCurrentMonth = date.month == yearMonth.month,
-                        onDateSelected = onDateSelected
-                    )
-                } else {
-                    Spacer(modifier = Modifier.aspectRatio(1f))
-                }
+                MonthDayCell(
+                    date = date,
+                    isSelected = date == selectedDate,
+                    isToday = date == today,
+                    isCurrentMonth = date.month == yearMonth.month,
+                    onDateSelected = onDateSelected
+                )
             }
         }
     }
