@@ -4,6 +4,8 @@
 
     <!-- Permission for widgets to run in the background -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Permission for remote holiday updates -->
+    <uses-permission android:name="android.permission.INTERNET" />
     
     <application
         android:name=".VietnamCalendarApplication"

@@ -1,6 +1,12 @@
 package me.thinhbuzz.vietnamcalendar.utils
 
+import android.content.Context
+import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.toJavaLocalDate
+import kotlinx.datetime.toKotlinLocalDate
+import me.thinhbuzz.vietnamcalendar.data.HolidayDataLoader
+import me.thinhbuzz.vietnamcalendar.data.HolidayInfo
 
 data class Holiday(
     val name: String,
@@ -10,8 +16,33 @@ data class Holiday(
 )
 
 object VietnameseHolidays {
+    private var dataLoader: HolidayDataLoader? = null
+    
+    fun initialize(context: Context) {
+        dataLoader = HolidayDataLoader.getInstance(context)
+    }
     
     fun getSolarHolidays(year: Int): List<Holiday> {
+        // Try to use data loader if available
+        dataLoader?.let { loader ->
+            return runBlocking {
+                try {
+                    val holidays = loader.getHolidaysForYear(year)
+                    return@runBlocking holidays
+                        .filter { !it.isLunar }
+                        .map { convertToKotlinHoliday(it) }
+                } catch (e: Exception) {
+                    // Fall back to hardcoded data
+                    return@runBlocking getDefaultSolarHolidays(year)
+                }
+            }
+        }
+        
+        // Fallback to hardcoded data
+        return getDefaultSolarHolidays(year)
+    }
+    
+    private fun getDefaultSolarHolidays(year: Int): List<Holiday> {
         return listOf(
             Holiday(
                 name = "Tết Dương lịch",
@@ -42,6 +73,26 @@ object VietnameseHolidays {
     }
     
     fun getLunarHolidays(year: Int): List<Holiday> {
+        // Try to use data loader if available
+        dataLoader?.let { loader ->
+            return runBlocking {
+                try {
+                    val holidays = loader.getHolidaysForYear(year)
+                    return@runBlocking holidays
+                        .filter { it.isLunar }
+                        .map { convertToKotlinHoliday(it) }
+                } catch (e: Exception) {
+                    // Fall back to hardcoded data
+                    return@runBlocking getDefaultLunarHolidays(year)
+                }
+            }
+        }
+        
+        // Fallback to hardcoded data
+        return getDefaultLunarHolidays(year)
+    }
+    
+    private fun getDefaultLunarHolidays(year: Int): List<Holiday> {
         val lunarHolidays = mutableListOf<Holiday>()
         
         // Tết Nguyên Đán (Lunar New Year) - 1st day of 1st lunar month
@@ -164,11 +215,47 @@ object VietnameseHolidays {
     }
     
     fun getAllHolidays(year: Int): List<Holiday> {
+        // Try to use data loader if available
+        dataLoader?.let { loader ->
+            return runBlocking {
+                try {
+                    val holidays = loader.getHolidaysForYear(year)
+                    return@runBlocking holidays.map { convertToKotlinHoliday(it) }
+                } catch (e: Exception) {
+                    // Fall back to hardcoded data
+                    return@runBlocking getSolarHolidays(year) + getLunarHolidays(year)
+                }
+            }
+        }
+        
         return getSolarHolidays(year) + getLunarHolidays(year)
     }
     
     fun isHoliday(date: LocalDate): Holiday? {
+        // Try to use data loader if available
+        dataLoader?.let { loader ->
+            return runBlocking {
+                try {
+                    val holiday = loader.getHoliday(date.toJavaLocalDate())
+                    return@runBlocking holiday?.let { convertToKotlinHoliday(it) }
+                } catch (e: Exception) {
+                    // Fall back to hardcoded data
+                    val holidays = getAllHolidays(date.year)
+                    return@runBlocking holidays.find { it.date == date }
+                }
+            }
+        }
+        
         val holidays = getAllHolidays(date.year)
         return holidays.find { it.date == date }
+    }
+    
+    private fun convertToKotlinHoliday(holiday: HolidayInfo): Holiday {
+        return Holiday(
+            name = holiday.name,
+            date = holiday.date.toKotlinLocalDate(),
+            isLunar = holiday.isLunar,
+            description = holiday.description
+        )
     }
 }

@@ -1,0 +1,136 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-01-24",
+  "holidays": {
+    "solar": [
+      {
+        "id": "new_year",
+        "name": "Tết Dương lịch",
+        "month": 1,
+        "day": 1,
+        "description": "Ngày đầu tiên của năm mới",
+        "isPublicHoliday": true,
+        "color": "#FF0000"
+      },
+      {
+        "id": "communist_party",
+        "name": "Ngày thành lập Đảng Cộng sản Việt Nam",
+        "month": 2,
+        "day": 3,
+        "description": "Kỷ niệm ngày thành lập Đảng Cộng sản Việt Nam",
+        "isPublicHoliday": false,
+        "color": "#FF0000"
+      },
+      {
+        "id": "liberation_day",
+        "name": "Ngày Giải phóng miền Nam",
+        "month": 4,
+        "day": 30,
+        "description": "Ngày Giải phóng miền Nam, thống nhất đất nước",
+        "isPublicHoliday": true,
+        "color": "#FF0000"
+      },
+      {
+        "id": "labor_day",
+        "name": "Ngày Quốc tế Lao động",
+        "month": 5,
+        "day": 1,
+        "description": "Ngày Quốc tế Lao động",
+        "isPublicHoliday": true,
+        "color": "#FF0000"
+      },
+      {
+        "id": "national_day",
+        "name": "Ngày Quốc khánh",
+        "month": 9,
+        "day": 2,
+        "description": "Ngày Quốc khánh nước Cộng hòa Xã hội chủ nghĩa Việt Nam",
+        "isPublicHoliday": true,
+        "color": "#FF0000"
+      }
+    ],
+    "lunar": [
+      {
+        "id": "tet_1",
+        "name": "Tết Nguyên Đán",
+        "lunarMonth": 1,
+        "lunarDay": 1,
+        "description": "Ngày đầu tiên của Tết cổ truyền",
+        "isPublicHoliday": true,
+        "color": "#FF0000"
+      },
+      {
+        "id": "tet_2",
+        "name": "Mùng 2 Tết",
+        "lunarMonth": 1,
+        "lunarDay": 2,
+        "description": "Ngày thứ hai của Tết",
+        "isPublicHoliday": true,
+        "color": "#FF0000"
+      },
+      {
+        "id": "tet_3",
+        "name": "Mùng 3 Tết",
+        "lunarMonth": 1,
+        "lunarDay": 3,
+        "description": "Ngày thứ ba của Tết",
+        "isPublicHoliday": true,
+        "color": "#FF0000"
+      },
+      {
+        "id": "hung_kings",
+        "name": "Giỗ Tổ Hùng Vương",
+        "lunarMonth": 3,
+        "lunarDay": 10,
+        "description": "Ngày Giỗ Tổ Hùng Vương",
+        "isPublicHoliday": true,
+        "color": "#FF0000"
+      },
+      {
+        "id": "doan_ngo",
+        "name": "Tết Đoan Ngọ",
+        "lunarMonth": 5,
+        "lunarDay": 5,
+        "description": "Tết Đoan Ngọ",
+        "isPublicHoliday": false,
+        "color": "#FFA500"
+      },
+      {
+        "id": "ram_thang_gieng",
+        "name": "Rằm tháng Giêng",
+        "lunarMonth": 1,
+        "lunarDay": 15,
+        "description": "Lễ cầu an đầu năm",
+        "isPublicHoliday": false,
+        "color": "#FFA500"
+      },
+      {
+        "id": "vu_lan",
+        "name": "Lễ Vu Lan",
+        "lunarMonth": 7,
+        "lunarDay": 15,
+        "description": "Lễ Vu Lan - Báo hiếu cha mẹ",
+        "isPublicHoliday": false,
+        "color": "#FFA500"
+      },
+      {
+        "id": "trung_thu",
+        "name": "Tết Trung Thu",
+        "lunarMonth": 8,
+        "lunarDay": 15,
+        "description": "Tết Trung Thu - Tết thiếu nhi",
+        "isPublicHoliday": false,
+        "color": "#FFA500"
+      },
+      {
+        "id": "ong_tao",
+        "name": "Tết Ông Táo",
+        "lunarMonth": 12,
+        "lunarDay": 23,
+        "description": "Tiễn Táo Quân về trời",
+        "isPublicHoliday": false,
+        "color": "#FFA500"
+      }
+    ]
+  }
+}
