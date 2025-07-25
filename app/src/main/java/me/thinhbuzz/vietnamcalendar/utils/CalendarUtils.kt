@@ -4,14 +4,21 @@ import kotlinx.datetime.*
 
 object CalendarUtils {
     
-    fun getWeekDays(date: LocalDate): List<LocalDate> {
-        // Find the Sunday of the current week
-        val daysFromSunday = if (date.dayOfWeek == DayOfWeek.SUNDAY) 0 else date.dayOfWeek.value
-        val startOfWeek = date.minus(DatePeriod(days = daysFromSunday))
-        return (0..6).map { startOfWeek.plus(DatePeriod(days = it)) }
+    fun getWeekDays(date: LocalDate, startWithMonday: Boolean = false): List<LocalDate> {
+        return if (startWithMonday) {
+            // Find the Monday of the current week
+            val daysFromMonday = (date.dayOfWeek.value - 1 + 7) % 7
+            val startOfWeek = date.minus(DatePeriod(days = daysFromMonday))
+            (0..6).map { startOfWeek.plus(DatePeriod(days = it)) }
+        } else {
+            // Find the Sunday of the current week
+            val daysFromSunday = if (date.dayOfWeek == DayOfWeek.SUNDAY) 0 else date.dayOfWeek.value
+            val startOfWeek = date.minus(DatePeriod(days = daysFromSunday))
+            (0..6).map { startOfWeek.plus(DatePeriod(days = it)) }
+        }
     }
     
-    fun getMonthDays(yearMonth: YearMonth): List<LocalDate> {
+    fun getMonthDays(yearMonth: YearMonth, startWithMonday: Boolean = false): List<LocalDate> {
         val firstDay = LocalDate(yearMonth.year, yearMonth.month, 1)
         val daysInMonth = when (yearMonth.month) {
             Month.JANUARY, Month.MARCH, Month.MAY, Month.JULY, Month.AUGUST, Month.OCTOBER, Month.DECEMBER -> 31
@@ -20,8 +27,14 @@ object CalendarUtils {
             else -> 30
         }
         val lastDay = LocalDate(yearMonth.year, yearMonth.month, daysInMonth)
-        // Sunday = 0, Monday = 1, etc.
-        val firstDayOfWeek = if (firstDay.dayOfWeek == DayOfWeek.SUNDAY) 0 else firstDay.dayOfWeek.value
+        
+        val firstDayOfWeek = if (startWithMonday) {
+            // Monday = 0, Tuesday = 1, etc., Sunday = 6
+            (firstDay.dayOfWeek.value - 1 + 7) % 7
+        } else {
+            // Sunday = 0, Monday = 1, etc.
+            if (firstDay.dayOfWeek == DayOfWeek.SUNDAY) 0 else firstDay.dayOfWeek.value
+        }
         
         val days = mutableListOf<LocalDate>()
         
@@ -63,12 +76,12 @@ object CalendarUtils {
     
     fun getVietnameseDayOfWeek(dayOfWeek: DayOfWeek): String {
         return when (dayOfWeek) {
-            DayOfWeek.MONDAY -> "Thứ Hai"
-            DayOfWeek.TUESDAY -> "Thứ Ba"
-            DayOfWeek.WEDNESDAY -> "Thứ Tư"
-            DayOfWeek.THURSDAY -> "Thứ Năm"
-            DayOfWeek.FRIDAY -> "Thứ Sáu"
-            DayOfWeek.SATURDAY -> "Thứ Bảy"
+            DayOfWeek.MONDAY -> "Thứ 2"
+            DayOfWeek.TUESDAY -> "Thứ 3"
+            DayOfWeek.WEDNESDAY -> "Thứ 4"
+            DayOfWeek.THURSDAY -> "Thứ 5"
+            DayOfWeek.FRIDAY -> "Thứ 6"
+            DayOfWeek.SATURDAY -> "Thứ 7"
             DayOfWeek.SUNDAY -> "Chủ Nhật"
             else -> ""
         }

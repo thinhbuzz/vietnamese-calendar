@@ -4,7 +4,8 @@
       "Bash(mkdir:*)",
       "Bash(gradlew.bat assembleDebug:*)",
       "Bash(./gradlew:*)",
-      "Bash(adb:*)"
+      "Bash(adb:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

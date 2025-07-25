@@ -23,11 +23,18 @@ import me.thinhbuzz.vietnamcalendar.viewmodel.CalendarViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(
-    viewModel: CalendarViewModel = viewModel()
+    viewModel: CalendarViewModel = viewModel(),
+    onNavigateToSettings: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     
     Scaffold(
+        topBar = {
+            CalendarTopBar(
+                onNavigateToday = { viewModel.navigateToToday() },
+                onNavigateToSettings = onNavigateToSettings
+            )
+        },
         bottomBar = {
             CalendarBottomBar(
                 currentView = uiState.currentView,
@@ -59,8 +66,7 @@ fun CalendarScreen(
                         CalendarView.MONTH -> viewModel.navigateToNextMonth()
                         CalendarView.YEAR -> viewModel.navigateToNextYear()
                     }
-                },
-                onNavigateToday = { viewModel.navigateToToday() }
+                }
             )
             
             // Calendar content with weight to take available space
@@ -94,14 +100,41 @@ fun CalendarScreen(
                 }
             }
             
-            // Selected date info
-            SelectedDateInfo(
-                selectedDate = uiState.selectedDate,
-                lunarDate = viewModel.getLunarDate(uiState.selectedDate),
-                holiday = viewModel.getHoliday(uiState.selectedDate)
-            )
+            // Selected date information (not shown in year view)
+            if (uiState.currentView != CalendarView.YEAR) {
+                SelectedDateInfo(
+                    selectedDate = uiState.selectedDate,
+                    lunarDate = viewModel.getLunarDate(uiState.selectedDate),
+                    holiday = viewModel.getHoliday(uiState.selectedDate)
+                )
+            }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CalendarTopBar(
+    onNavigateToday: () -> Unit,
+    onNavigateToSettings: () -> Unit
+) {
+    TopAppBar(
+        title = { 
+            Text(
+                text = "Lịch Việt Nam",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        actions = {
+            IconButton(onClick = onNavigateToSettings) {
+                Icon(Icons.Default.Settings, contentDescription = "Cài đặt")
+            }
+            IconButton(onClick = onNavigateToday) {
+                Icon(Icons.Default.DateRange, contentDescription = "Hôm nay")
+            }
+        }
+    )
 }
 
 @Composable
@@ -111,16 +144,23 @@ private fun CalendarNavigationBar(
     currentYearMonth: YearMonth,
     currentYear: Int,
     onNavigatePrevious: () -> Unit,
-    onNavigateNext: () -> Unit,
-    onNavigateToday: () -> Unit
+    onNavigateNext: () -> Unit
 ) {
+    val settings = me.thinhbuzz.vietnamcalendar.ui.LocalCalendarSettings.current
+    
     val title = when (currentView) {
         CalendarView.WEEK -> {
-            val weekStart = CalendarUtils.getWeekDays(currentDate).first()
-            val weekEnd = CalendarUtils.getWeekDays(currentDate).last()
-            "${weekStart.dayOfMonth}/${weekStart.monthNumber} - ${weekEnd.dayOfMonth}/${weekEnd.monthNumber}/${weekEnd.year}"
+            val startWithMonday = settings.firstDayOfWeek == me.thinhbuzz.vietnamcalendar.data.FirstDayOfWeek.MONDAY
+            val weekStart = CalendarUtils.getWeekDays(currentDate, startWithMonday).first()
+            val weekEnd = CalendarUtils.getWeekDays(currentDate, startWithMonday).last()
+            me.thinhbuzz.vietnamcalendar.utils.DateFormatter.formatWeekRange(weekStart, weekEnd, settings.dayMonthFormat, settings.addLeadingZero)
         }
-        CalendarView.MONTH -> "${CalendarUtils.getVietnameseMonth(currentYearMonth.month)} ${currentYearMonth.year}"
+        CalendarView.MONTH -> me.thinhbuzz.vietnamcalendar.utils.DateFormatter.formatMonthYear(
+            currentYearMonth.year, 
+            currentYearMonth.month.value, 
+            settings.monthYearFormat,
+            settings.addLeadingZero
+        )
         CalendarView.YEAR -> "Năm $currentYear"
     }
     
@@ -132,25 +172,17 @@ private fun CalendarNavigationBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onNavigatePrevious) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Trước")
         }
         
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            IconButton(onClick = onNavigateToday) {
-                Icon(Icons.Default.DateRange, contentDescription = "Today")
-            }
-        }
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
         
         IconButton(onClick = onNavigateNext) {
-            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next")
+            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Sau")
         }
     }
 }
@@ -188,10 +220,12 @@ private fun SelectedDateInfo(
     lunarDate: me.thinhbuzz.vietnamcalendar.utils.LunarDate,
     holiday: me.thinhbuzz.vietnamcalendar.utils.Holiday?
 ) {
+    val settings = me.thinhbuzz.vietnamcalendar.ui.LocalCalendarSettings.current
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
@@ -201,39 +235,29 @@ private fun SelectedDateInfo(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = "${CalendarUtils.getVietnameseDayOfWeek(selectedDate.dayOfWeek)}, ${selectedDate.dayOfMonth}/${selectedDate.monthNumber}/${selectedDate.year}",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Âm lịch: ${CalendarUtils.formatLunarDate(lunarDate)}, ${lunarDate.year}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+            // Gregorian calendar
+            Text(
+                text = "${CalendarUtils.getVietnameseDayOfWeek(selectedDate.dayOfWeek)}, ${me.thinhbuzz.vietnamcalendar.utils.DateFormatter.formatDayMonthYear(selectedDate, settings.dayMonthYearFormat, settings.addLeadingZero)}",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold
+            )
             
+            // Lunar calendar
+            Text(
+                text = "Âm lịch: ${me.thinhbuzz.vietnamcalendar.utils.DateFormatter.formatLunarDate(lunarDate, settings.dayMonthYearFormat, settings.addLeadingZero)}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            
+            // Holiday information
             if (holiday != null) {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = holiday.name,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.error
                 )
-                if (holiday.description.isNotEmpty()) {
-                    Text(
-                        text = holiday.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
             }
         }
     }

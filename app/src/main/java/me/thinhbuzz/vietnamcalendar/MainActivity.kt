@@ -4,7 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import me.thinhbuzz.vietnamcalendar.screens.CalendarScreen
+import me.thinhbuzz.vietnamcalendar.navigation.CalendarNavigation
+import me.thinhbuzz.vietnamcalendar.ui.CalendarSettingsProvider
 import me.thinhbuzz.vietnamcalendar.ui.theme.VietNamCalendarTheme
 
 class MainActivity : ComponentActivity() {
@@ -13,7 +14,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             VietNamCalendarTheme {
-                CalendarScreen()
+                CalendarSettingsProvider {
+                    CalendarNavigation()
+                }
             }
         }
     }
