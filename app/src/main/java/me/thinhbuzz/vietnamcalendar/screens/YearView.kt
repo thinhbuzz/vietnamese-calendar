@@ -31,8 +31,8 @@ fun YearView(
     onSwipeLeft: () -> Unit,
     onSwipeRight: () -> Unit
 ) {
-    val months = CalendarUtils.getYearMonths(year)
-    val currentMonth = CalendarUtils.getCurrentYearMonth()
+    val months = remember(year) { CalendarUtils.getYearMonths(year) }
+    val currentMonth = remember { CalendarUtils.getCurrentYearMonth() }
     var dragAmount by remember { mutableStateOf(0f) }
     
     // Months grid without year header
@@ -58,7 +58,7 @@ fun YearView(
                 }
             }
     ) {
-            items(months.size) { index ->
+            items(months.size, key = { months[it].toString() }) { index ->
                 val yearMonth = months[index]
                 MiniMonthView(
                     yearMonth = yearMonth,
@@ -77,7 +77,7 @@ private fun MiniMonthView(
     selectedDate: LocalDate,
     onMonthSelected: (YearMonth) -> Unit
 ) {
-    val monthDays = CalendarUtils.getMonthDays(yearMonth)
+    val monthDays = remember(yearMonth) { CalendarUtils.getMonthDays(yearMonth) }
     
     Card(
         modifier = Modifier
@@ -132,24 +132,32 @@ private fun MiniMonthView(
                                 val isSelected = date == selectedDate
                                 val isToday = date == CalendarUtils.getCurrentDate()
                                 
-                                Text(
-                                    text = date.dayOfMonth.toString(),
-                                    fontSize = 9.sp,
-                                    color = when {
-                                        date.month != yearMonth.month -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                                        isSelected -> MaterialTheme.colorScheme.primary
-                                        isToday -> MaterialTheme.colorScheme.primary
-                                        date.dayOfWeek == DayOfWeek.SUNDAY -> Color.Red
-                                        else -> MaterialTheme.colorScheme.onSurface
-                                    },
-                                    fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal,
-                                    modifier = if (isSelected) {
+                                Box(
+                                    modifier = if (isSelected || isToday) {
                                         Modifier
+                                            .fillMaxSize()
                                             .clip(RoundedCornerShape(50))
-                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-                                            .padding(1.dp)
-                                    } else Modifier
-                                )
+                                            .background(
+                                                if (isToday) MaterialTheme.colorScheme.primary
+                                                else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                            )
+                                    } else Modifier,
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = date.dayOfMonth.toString(),
+                                        fontSize = 10.sp,
+                                        color = when {
+                                            isToday -> MaterialTheme.colorScheme.onPrimary
+                                            date.month != yearMonth.month -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                                            isSelected -> MaterialTheme.colorScheme.primary
+                                            date.dayOfWeek == DayOfWeek.SUNDAY -> Color.Red
+                                            else -> MaterialTheme.colorScheme.onSurface
+                                        },
+                                        fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
                             }
                         }
                     }

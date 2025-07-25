@@ -75,21 +75,7 @@ object CalendarUtils {
     }
     
     fun getVietnameseMonth(month: Month): String {
-        return when (month) {
-            Month.JANUARY -> "Tháng Một"
-            Month.FEBRUARY -> "Tháng Hai"
-            Month.MARCH -> "Tháng Ba"
-            Month.APRIL -> "Tháng Tư"
-            Month.MAY -> "Tháng Năm"
-            Month.JUNE -> "Tháng Sáu"
-            Month.JULY -> "Tháng Bảy"
-            Month.AUGUST -> "Tháng Tám"
-            Month.SEPTEMBER -> "Tháng Chín"
-            Month.OCTOBER -> "Tháng Mười"
-            Month.NOVEMBER -> "Tháng Mười Một"
-            Month.DECEMBER -> "Tháng Mười Hai"
-            else -> ""
-        }
+        return "Tháng ${month.value}"
     }
     
     fun getLunarMonthName(month: Int): String {
@@ -111,7 +97,7 @@ object CalendarUtils {
     }
     
     fun formatLunarDate(lunarDate: LunarDate): String {
-        val monthStr = if (lunarDate.isLeapMonth) "Nhuận ${getLunarMonthName(lunarDate.month)}" else getLunarMonthName(lunarDate.month)
+        val monthStr = if (lunarDate.isLeapMonth) "tháng nhuận ${lunarDate.month}" else "tháng ${lunarDate.month}"
         return "${lunarDate.day} $monthStr"
     }
     
