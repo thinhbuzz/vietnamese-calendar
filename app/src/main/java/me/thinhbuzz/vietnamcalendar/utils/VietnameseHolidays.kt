@@ -22,23 +22,26 @@ object VietnameseHolidays {
         dataLoader = HolidayDataLoader.getInstance(context)
     }
     
-    fun getSolarHolidays(year: Int): List<Holiday> {
+    suspend fun getSolarHolidaysAsync(year: Int): List<Holiday> {
         // Try to use data loader if available
         dataLoader?.let { loader ->
-            return runBlocking {
-                try {
-                    val holidays = loader.getHolidaysForYear(year)
-                    return@runBlocking holidays
-                        .filter { !it.isLunar }
-                        .map { convertToKotlinHoliday(it) }
-                } catch (e: Exception) {
-                    // Fall back to hardcoded data
-                    return@runBlocking getDefaultSolarHolidays(year)
-                }
+            return try {
+                val holidays = loader.getHolidaysForYear(year)
+                holidays
+                    .filter { !it.isLunar }
+                    .map { convertToKotlinHoliday(it) }
+            } catch (e: Exception) {
+                // Fall back to hardcoded data
+                getDefaultSolarHolidays(year)
             }
         }
         
         // Fallback to hardcoded data
+        return getDefaultSolarHolidays(year)
+    }
+    
+    fun getSolarHolidays(year: Int): List<Holiday> {
+        // Fallback to hardcoded data for non-suspend calls
         return getDefaultSolarHolidays(year)
     }
     
@@ -72,23 +75,26 @@ object VietnameseHolidays {
         )
     }
     
-    fun getLunarHolidays(year: Int): List<Holiday> {
+    suspend fun getLunarHolidaysAsync(year: Int): List<Holiday> {
         // Try to use data loader if available
         dataLoader?.let { loader ->
-            return runBlocking {
-                try {
-                    val holidays = loader.getHolidaysForYear(year)
-                    return@runBlocking holidays
-                        .filter { it.isLunar }
-                        .map { convertToKotlinHoliday(it) }
-                } catch (e: Exception) {
-                    // Fall back to hardcoded data
-                    return@runBlocking getDefaultLunarHolidays(year)
-                }
+            return try {
+                val holidays = loader.getHolidaysForYear(year)
+                holidays
+                    .filter { it.isLunar }
+                    .map { convertToKotlinHoliday(it) }
+            } catch (e: Exception) {
+                // Fall back to hardcoded data
+                getDefaultLunarHolidays(year)
             }
         }
         
         // Fallback to hardcoded data
+        return getDefaultLunarHolidays(year)
+    }
+    
+    fun getLunarHolidays(year: Int): List<Holiday> {
+        // Fallback to hardcoded data for non-suspend calls
         return getDefaultLunarHolidays(year)
     }
     
@@ -214,38 +220,45 @@ object VietnameseHolidays {
         return lunarHolidays
     }
     
-    fun getAllHolidays(year: Int): List<Holiday> {
+    suspend fun getAllHolidaysSuspend(year: Int): List<Holiday> {
         // Try to use data loader if available
         dataLoader?.let { loader ->
-            return runBlocking {
-                try {
-                    val holidays = loader.getHolidaysForYear(year)
-                    return@runBlocking holidays.map { convertToKotlinHoliday(it) }
-                } catch (e: Exception) {
-                    // Fall back to hardcoded data
-                    return@runBlocking getSolarHolidays(year) + getLunarHolidays(year)
-                }
+            return try {
+                val holidays = loader.getHolidaysForYear(year)
+                holidays.map { convertToKotlinHoliday(it) }
+            } catch (e: Exception) {
+                // Fall back to hardcoded data
+                getSolarHolidaysAsync(year) + getLunarHolidaysAsync(year)
             }
         }
         
+        return getSolarHolidaysAsync(year) + getLunarHolidaysAsync(year)
+    }
+    
+    fun getAllHolidays(year: Int): List<Holiday> {
+        // Fallback to hardcoded data for non-suspend calls
         return getSolarHolidays(year) + getLunarHolidays(year)
     }
     
-    fun isHoliday(date: LocalDate): Holiday? {
+    suspend fun isHolidaySuspend(date: LocalDate): Holiday? {
         // Try to use data loader if available
         dataLoader?.let { loader ->
-            return runBlocking {
-                try {
-                    val holiday = loader.getHoliday(date.toJavaLocalDate())
-                    return@runBlocking holiday?.let { convertToKotlinHoliday(it) }
-                } catch (e: Exception) {
-                    // Fall back to hardcoded data
-                    val holidays = getAllHolidays(date.year)
-                    return@runBlocking holidays.find { it.date == date }
-                }
+            return try {
+                val holiday = loader.getHoliday(date.toJavaLocalDate())
+                holiday?.let { convertToKotlinHoliday(it) }
+            } catch (e: Exception) {
+                // Fall back to hardcoded data
+                val holidays = getAllHolidaysSuspend(date.year)
+                holidays.find { it.date == date }
             }
         }
         
+        val holidays = getAllHolidaysSuspend(date.year)
+        return holidays.find { it.date == date }
+    }
+    
+    fun isHoliday(date: LocalDate): Holiday? {
+        // Fallback to hardcoded data for non-suspend calls
         val holidays = getAllHolidays(date.year)
         return holidays.find { it.date == date }
     }

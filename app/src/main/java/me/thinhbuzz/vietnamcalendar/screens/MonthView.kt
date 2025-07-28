@@ -104,12 +104,10 @@ private fun MonthDayCell(
     isCurrentMonth: Boolean,
     onDateSelected: (LocalDate) -> Unit
 ) {
-    val lunarDate = LunarCalendarConverter.convertSolar2Lunar(
-        date.dayOfMonth,
-        date.monthNumber,
-        date.year
-    )
-    val holiday = VietnameseHolidays.isHoliday(date)
+    val lunarDate = remember(date) {
+        me.thinhbuzz.vietnamcalendar.utils.LunarDateCache.getLunarDate(date)
+    }
+    val holiday = remember(date) { me.thinhbuzz.vietnamcalendar.utils.HolidayCache.getHoliday(date) }
     
     val backgroundColor = when {
         isSelected -> MaterialTheme.colorScheme.primary

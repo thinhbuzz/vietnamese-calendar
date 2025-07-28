@@ -11,6 +11,8 @@ import me.thinhbuzz.vietnamcalendar.utils.CalendarUtils
 import me.thinhbuzz.vietnamcalendar.utils.YearMonth
 import me.thinhbuzz.vietnamcalendar.utils.LunarCalendarConverter
 import me.thinhbuzz.vietnamcalendar.utils.VietnameseHolidays
+import me.thinhbuzz.vietnamcalendar.utils.LunarDate
+import me.thinhbuzz.vietnamcalendar.utils.Holiday
 
 enum class CalendarView {
     WEEK, MONTH, YEAR
@@ -93,11 +95,7 @@ class CalendarViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(currentYear = _uiState.value.currentYear + 1)
     }
     
-    fun getLunarDate(date: LocalDate) = LunarCalendarConverter.convertSolar2Lunar(
-        date.dayOfMonth,
-        date.monthNumber,
-        date.year
-    )
+    fun getLunarDate(date: LocalDate) = me.thinhbuzz.vietnamcalendar.utils.LunarDateCache.getLunarDate(date)
     
-    fun getHoliday(date: LocalDate) = VietnameseHolidays.isHoliday(date)
+    fun getHoliday(date: LocalDate) = me.thinhbuzz.vietnamcalendar.utils.HolidayCache.getHoliday(date)
 }
